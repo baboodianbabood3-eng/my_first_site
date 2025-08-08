@@ -1,0 +1,129 @@
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(180deg, #1b1b1d, #2a2a2d);
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+header {
+    padding: 20px 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    justify-content: center;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.logo a {
+    color: white;
+    text-decoration: none;
+    font-weight: 800;
+    font-size: 1.8rem;
+}
+
+.logo a:hover {
+    opacity: 0.8;
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: 120px 20px;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 10px;
+    font-weight: 800;
+}
+
+.hero p {
+    font-size: 1.25rem;
+    margin-bottom: 40px;
+    opacity: 0.8;
+}
+
+/* Main Button */
+.main-btn {
+    background: linear-gradient(145deg, #3a3a3c, #2c2c2e);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 16px 40px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 14px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4),
+                inset 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.main-btn:hover {
+    background: linear-gradient(145deg, #4a4a4c, #3a3a3c);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5),
+                inset 0 1px rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+/* Dropdown and Search */
+.dropdown {
+    position: relative;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.search-input {
+    padding: 12px 16px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    width: 100%;
+    background: #2e2e31;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.language-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 8px;
+    background: #2a2a2d;
+    overflow-y: auto;
+    transition: max-height 0.3s ease;
+}
+
+.language-list li {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: 0.3s;
+    text-align: center;
+    background: linear-gradient(145deg, #3a3a3c, #2c2c2e);
+}
+
+.language-list li:hover {
+    background: linear-gradient(145deg, #4a4a4c, #3a3a3c);
+}
+
+.language-list.collapsed {
+    max-height: 150px; /* Shows about 3 items */
+}
+
+.language-list:not(.collapsed) {
+    max-height: 300px; /* Expanded list */
+}
+

@@ -1,0 +1,29 @@
+<h2>{{ title }}</h2>
+<p>Video URL: {{ video_url }}</p>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Extension</th>
+      <th>Resolution</th>
+      <th>FPS</th>
+      <th>Video Codec</th>
+      <th>Audio Codec</th>
+      <th>Size</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for fmt in formats %}
+    <tr>
+      <td>{{ fmt.id }}</td>
+      <td>{{ fmt.ext }}</td>
+      <td>{{ fmt.resolution }}</td>
+      <td>{{ fmt.fps }}</td>
+      <td>{{ fmt.vcodec }}</td>
+      <td>{{ fmt.acodec }}</td>
+      <td>{{ fmt.size }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

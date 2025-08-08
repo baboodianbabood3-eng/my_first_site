@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+    <h1>Select Language</h1>
+    <p>Search and choose your preferred language.</p>
+
+    <div class="dropdown">
+        <input type="text" id="search" placeholder="Search language..." class="search-input">
+        <ul id="language-list" class="language-list collapsed">
+            <li data-lang="English">English</li>
+            <li data-lang="Spanish">Spanish</li>
+            <li data-lang="French">French</li>
+            <li data-lang="German">German</li>
+            <li data-lang="Arabic">Arabic</li>
+            <li data-lang="Chinese">Chinese</li>
+            <li data-lang="Hindi">Hindi</li>
+            <li data-lang="Russian">Russian</li>
+            <li data-lang="Japanese">Japanese</li>
+            <li data-lang="Korean">Korean</li>
+        </ul>
+    </div>
+</section>
+
+<script>
+    const searchInput = document.getElementById('search');
+    const languageList = document.getElementById('language-list');
+    const allLanguages = Array.from(languageList.querySelectorAll('li'));
+
+    function renderList(items, limit = 3) {
+        languageList.innerHTML = '';
+        items.slice(0, limit).forEach(li => {
+            const clone = li.cloneNode(true);
+            clone.addEventListener('click', () => {
+                const lang = clone.getAttribute('data-lang');
+                window.location.href = `/language/${encodeURIComponent(lang)}`;
+            });
+            languageList.appendChild(clone);
+        });
+    }
+
+    // Search behavior
+    searchInput.addEventListener('input', () => {
+        const filter = searchInput.value.toLowerCase();
+        const filtered = allLanguages.filter(li =>
+            li.textContent.toLowerCase().includes(filter)
+        );
+        renderList(filtered, languageList.classList.contains('collapsed') ? 3 : filtered.length);
+    });
+
+    // Toggle expand/collapse on click
+    languageList.addEventListener('click', () => {
+        languageList.classList.toggle('collapsed');
+        const filter = searchInput.value.toLowerCase();
+        const filtered = allLanguages.filter(li =>
+            li.textContent.toLowerCase().includes(filter)
+        );
+        renderList(filtered, languageList.classList.contains('collapsed') ? 3 : filtered.length);
+    });
+
+    // Initial render
+    renderList(allLanguages, 3);
+</script>
+{% endblock %}
