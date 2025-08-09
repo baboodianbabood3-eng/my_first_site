@@ -2,7 +2,9 @@ import yt_dlp
 
 def get_video_formats(video_url):
     try:
-        ydl_opts = {}
+        ydl_opts = {
+            'cookiefile': '/etc/secrets/cookies.txt'
+        }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=False)
             formats = info.get('formats', [])
