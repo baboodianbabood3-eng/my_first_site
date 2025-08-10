@@ -1,10 +1,22 @@
 import yt_dlp
+import os
 
 def get_video_formats(video_url):
     try:
+        # Path to the cookies file from Render's secret file mount
+        cookies_path = '/etc/secrets/cookies.txt'
+
+        # Debug: check if the file exists and its size
+        print("DEBUG - cookies file exists:", os.path.exists(cookies_path))
+        if os.path.exists(cookies_path):
+            print("DEBUG - cookies file size:", os.path.getsize(cookies_path))
+
+        # yt-dlp options
         ydl_opts = {
-            'cookiefile': '/etc/secrets/cookies.txt'
+            'cookiefile': cookies_path,  # tell yt-dlp where to load cookies
+            'verbose': True  # enable debug logs in Render logs
         }
+
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=False)
             formats = info.get('formats', [])
@@ -30,5 +42,6 @@ def get_video_formats(video_url):
                     'size': size_mb
                 })
             return format_list, info.get('title')
+
     except Exception as e:
         return [], f"Error: {e}"
