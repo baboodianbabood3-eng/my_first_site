@@ -1,18 +1,20 @@
 import yt_dlp
 import os
+import shutil
+import tempfile
 
 def get_video_formats(video_url):
     try:
-        # Path to the cookies file from Render's secret file mount
-        cookies_path = '/etc/secrets/cookies.txt'
+        secret_cookies_path = '/etc/secrets/cookies.txt'
+        temp_cookies_path = os.path.join(tempfile.gettempdir(), 'cookies.txt')
 
-        if not os.path.exists(cookies_path):
-            return [], "Error: Cookies file not found at /etc/secrets/cookies.txt"
+        print(f"DEBUG: Copying cookies from {secret_cookies_path} to {temp_cookies_path}")
+        shutil.copy(secret_cookies_path, temp_cookies_path)
+        print("DEBUG: Copy successful")
 
-        # yt-dlp options
         ydl_opts = {
-            'cookiefile': cookies_path,  # tell yt-dlp where to load cookies
-            'verbose': True              # enable debug logs in Render logs
+            'cookiefile': temp_cookies_path,
+            'verbose': True
         }
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -21,26 +23,18 @@ def get_video_formats(video_url):
 
             format_list = []
             for fmt in formats:
-                format_id = fmt.get('format_id')
-                ext = fmt.get('ext')
-                resolution = fmt.get('resolution') or f"{fmt.get('width')}x{fmt.get('height')}"
-                fps = fmt.get('fps', '')
-                vcodec = fmt.get('vcodec')
-                acodec = fmt.get('acodec')
-                filesize = fmt.get('filesize') or fmt.get('filesize_approx')
-                size_mb = f"{filesize / (1024 * 1024):.2f} MB" if filesize else "N/A"
-
                 format_list.append({
-                    'id': format_id,
-                    'ext': ext,
-                    'resolution': resolution,
-                    'fps': fps,
-                    'vcodec': vcodec,
-                    'acodec': acodec,
-                    'size': size_mb
+                    'id': fmt.get('format_id'),
+                    'ext': fmt.get('ext'),
+                    'resolution': fmt.get('resolution') or f"{fmt.get('width')}x{fmt.get('height')}",
+                    'fps': fmt.get('fps', ''),
+                    'vcodec': fmt.get('vcodec'),
+                    'acodec': fmt.get('acodec'),
+                    'size': f"{(fmt.get('filesize') or fmt.get('filesize_approx') or 0) / (1024 * 1024):.2f} MB" if (fmt.get('filesize') or fmt.get('filesize_approx')) else "N/A"
                 })
 
             return format_list, info.get('title')
 
     except Exception as e:
+        print(f"ERROR: {e}")
         return [], f"Error: {e}"
