@@ -1,19 +1,13 @@
 import yt_dlp
 import os
-import shutil
-import tempfile
 
 def get_video_formats(video_url):
     try:
-        secret_cookies_path = '/etc/secrets/cookies.txt'
-        temp_cookies_path = os.path.join(tempfile.gettempdir(), 'cookies.txt')
-
-        print(f"DEBUG: Copying cookies from {secret_cookies_path} to {temp_cookies_path}")
-        shutil.copy(secret_cookies_path, temp_cookies_path)
-        print("DEBUG: Copy successful")
+        # Path to your cookies2.txt file
+        cookie_file_path = os.path.abspath('cookies2.txt')
 
         ydl_opts = {
-            'cookiefile': temp_cookies_path,
+            'cookiefile': cookie_file_path,
             'verbose': True
         }
 
@@ -30,7 +24,8 @@ def get_video_formats(video_url):
                     'fps': fmt.get('fps', ''),
                     'vcodec': fmt.get('vcodec'),
                     'acodec': fmt.get('acodec'),
-                    'size': f"{(fmt.get('filesize') or fmt.get('filesize_approx') or 0) / (1024 * 1024):.2f} MB" if (fmt.get('filesize') or fmt.get('filesize_approx')) else "N/A"
+                    'size': f"{(fmt.get('filesize') or fmt.get('filesize_approx') or 0) / (1024 * 1024):.2f} MB"
+                            if (fmt.get('filesize') or fmt.get('filesize_approx')) else "N/A"
                 })
 
             return format_list, info.get('title')
