@@ -1,113 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Choose Video Quality</title>
-<style>
-  :root{
-    --bg:#0f1115;        /* ElevenLabs-ish dark */
-    --panel:#1a1d24;     /* card */
-    --muted:#a9afbb;     /* subtle text */
-    --accent:#ffb84d;    /* warm accent */
-    --accent-hover:#ff9900;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    min-height:100vh;
-    background:var(--bg);
-    color:#fff;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,system-ui,sans-serif;
-    display:flex; align-items:center; justify-content:center; padding:24px;
-  }
-  .shell{
-    width:100%; max-width:720px;
-  }
-  header{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:16px;
-  }
-  .brand{
-    font-weight:700; font-size:18px; letter-spacing:.2px; color:var(--accent);
-  }
-  .card{
-    background:var(--panel);
-    border-radius:16px;
-    box-shadow:0 10px 30px rgba(0,0,0,.45);
-    padding:24px;
-  }
-  h1{
-    margin:0 0 6px 0; font-size:20px; font-weight:650;
-  }
-  .subtitle{
-    margin:0 0 18px 0; color:var(--muted); font-size:14px;
-  }
-  .row{ display:grid; gap:12px; }
-  label{ font-size:14px; color:#d7d9df; }
-  select, button{
-    width:100%; padding:12px 14px; border:none; outline:none;
-    border-radius:10px; font-size:15px;
-  }
-  select{
-    background:#2a2d35; color:#fff;
-  }
-  .btn{
-    background:var(--accent); color:#000; font-weight:700; cursor:pointer;
-    transition:background .2s ease;
-  }
-  .btn:hover{ background:var(--accent-hover); }
-  .meta{
-    margin-top:10px; font-size:13px; color:var(--muted);
-  }
-  .empty{
-    padding:14px; background:#22262f; border-radius:10px; color:#d0d3da; font-size:14px;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Select Video Quality</title>
+  <style>
+    :root {
+      --bg: #0d0f12;
+      --card-bg: rgba(20, 24, 30, 0.8);
+      --accent: #ffb84d;
+      --accent-hover: #ff9f1a;
+      --text-primary: #e4e6eb;
+      --text-secondary: #a0a5b1;
+      --input-bg: #1e2128;
+      --border-radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text-primary);
+      padding: 16px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      padding: 32px;
+      border-radius: var(--border-radius);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .card h1 {
+      font-size: 1.75rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+    }
+
+    .card p.subtitle {
+      margin-bottom: 24px;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    label {
+      text-align: left;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      outline: none;
+      border-radius: var(--border-radius);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: background 0.3s;
+    }
+
+    select:hover {
+      background: #2a2d35;
+    }
+
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: var(--border-radius);
+      background: var(--accent);
+      color: #111;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.1s;
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+    }
+
+    .format-option {
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+      font-size: 0.95rem;
+    }
+
+    .format-option:last-child {
+      border-bottom: none;
+    }
+
+  </style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <div class="brand">Video Downloader</div>
-    </header>
-
-    <div class="card">
-      <h1>{{ title or "Choose quality" }}</h1>
-      <p class="subtitle">Pick your preferred output quality (Apple‑style type & ElevenLabs vibes, all inline).</p>
-
-      {% if formats and formats|length > 0 %}
-      <form class="row" action="/download_video" method="POST">
-        <input type="hidden" name="video_url" value="{{ video_url }}"/>
-        <label for="quality">Available formats (audio + video recommended):</label>
-        <select id="quality" name="quality" required>
-          {# Prefer progressive (has audio+video). Fall back shows everything. #}
-          {% set shown = 0 %}
-          {% for fmt in formats %}
-            {% if fmt['acodec'] != 'none' and fmt['vcodec'] != 'none' %}
-              {% set _ = (shown.__add__(1)) %}
-              <option value="{{ fmt['id'] }}">
-                {{ fmt['resolution'] or '—' }} · {{ fmt['ext']|upper }} · {{ fmt['size'] }}
-              </option>
-            {% endif %}
-          {% endfor %}
-
-          {% if shown == 0 %}
-            {# If no progressive formats, show all so user can still pick one #}
-            {% for fmt in formats %}
-              <option value="{{ fmt['id'] }}">
-                {{ fmt['resolution'] or '—' }} · {{ fmt['ext']|upper }} · {{ fmt['size'] }} {% if fmt['acodec'] == 'none' %}(video‑only){% endif %}{% if fmt['vcodec'] == 'none' %}(audio‑only){% endif %}
-              </option>
-            {% endfor %}
-          {% endif %}
-        </select>
-
-        <button class="btn" type="submit">Download</button>
-        <p class="meta">Tip: larger files may take longer to prepare after you click Download.</p>
-      </form>
-      {% else %}
-        <div class="empty">No formats found for this URL. Try a different link, or ensure you’re logged in via cookies2.txt if the site requires it.</div>
-      {% endif %}
-    </div>
+  <div class="card">
+    <h1>{{ title or "Select Video Quality" }}</h1>
+    <p class="subtitle">Choose from the available video formats:</p>
+    <form action="/next_page" method="GET">
+      <input type="hidden" name="video_url" value="{{ video_url }}">
+      <label for="quality">Available Qualities</label>
+      <select id="quality" name="quality" required>
+        {% for fmt in formats %}
+          {% set res = fmt['resolution'] or (fmt['ext']|upper) %}
+          {% set size = fmt['size'] %}
+          <option value="{{ fmt['id'] }}">
+            {{ res }} — {{ fmt['ext']|upper }} — {{ size }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit">Next</button>
+    </form>
   </div>
 </body>
 </html>
