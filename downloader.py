@@ -1,35 +1,35 @@
-import yt_dlp
-import os
+# downloader.py
+from pytube import YouTube
 
-def get_video_formats(video_url):
-    try:
-        # Path to your cookies2.txt file
-        cookie_file_path = os.path.abspath('cookies2.txt')
+def get_video_formats(url):
+    yt = YouTube(url)
+    formats = []
 
-        ydl_opts = {
-            'cookiefile': cookie_file_path,
-            'verbose': True
-        }
+    # Video+Audio streams
+    for stream in yt.streams.filter(progressive=True, file_extension="mp4"):
+        formats.append({
+            "itag": stream.itag,
+            "type": "video+audio",
+            "resolution": stream.resolution,
+            "mime_type": stream.mime_type,
+        })
 
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-            formats = info.get('formats', [])
+    # Video only streams
+    for stream in yt.streams.filter(only_video=True, file_extension="mp4"):
+        formats.append({
+            "itag": stream.itag,
+            "type": "video",
+            "resolution": stream.resolution,
+            "mime_type": stream.mime_type,
+        })
 
-            format_list = []
-            for fmt in formats:
-                format_list.append({
-                    'id': fmt.get('format_id'),
-                    'ext': fmt.get('ext'),
-                    'resolution': fmt.get('resolution') or f"{fmt.get('width')}x{fmt.get('height')}",
-                    'fps': fmt.get('fps', ''),
-                    'vcodec': fmt.get('vcodec'),
-                    'acodec': fmt.get('acodec'),
-                    'size': f"{(fmt.get('filesize') or fmt.get('filesize_approx') or 0) / (1024 * 1024):.2f} MB"
-                            if (fmt.get('filesize') or fmt.get('filesize_approx')) else "N/A"
-                })
+    # Audio only streams
+    for stream in yt.streams.filter(only_audio=True):
+        formats.append({
+            "itag": stream.itag,
+            "type": "audio",
+            "resolution": stream.abr,  # audio bitrate
+            "mime_type": stream.mime_type,
+        })
 
-            return format_list, info.get('title')
-
-    except Exception as e:
-        print(f"ERROR: {e}")
-        return [], f"Error: {e}"
+    return formats, yt.title

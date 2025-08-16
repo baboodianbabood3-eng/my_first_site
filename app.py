@@ -1,5 +1,7 @@
 from flask import Flask, render_template , request, redirect, url_for
 from downloader import get_video_formats  # ⬅️ Add this at the top of app.py
+from urllib.parse import quote
+from urllib.parse import unquote
 
 app = Flask(__name__)
 
@@ -23,14 +25,21 @@ def language(lang):
 def takes_link():
     if request.method == "POST":
         video_url = request.form.get("video_url")
-        return redirect(url_for("quality_version", video_url=video_url))
+        print("DEBUG takes_link video_url:", video_url)  # 👀 see actual input
+        # Encode URL safely before redirect
+        return redirect(url_for("quality_version", video_url=quote(video_url)))
     return render_template("takes_link.html")
+
+
 
 @app.route("/quality_version")
 def quality_version():
     video_url = request.args.get("video_url")
+    video_url = unquote(video_url)  # decode back
+    print("DEBUG quality_version video_url:", video_url)  # 👀 should be full URL
     formats, title = get_video_formats(video_url)
     return render_template("quality_version.html", video_url=video_url, formats=formats, title=title)
+
 
 @app.route("/next_page")
 def next_page():
