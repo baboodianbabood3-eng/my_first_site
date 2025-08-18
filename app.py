@@ -1,7 +1,7 @@
 from flask import Flask, render_template , request, redirect, url_for
-from downloader import get_video_formats  # ⬅️ Add this at the top of app.py
 from urllib.parse import quote
 from urllib.parse import unquote
+from pytube import YouTube
 
 app = Flask(__name__)
 
@@ -29,17 +29,28 @@ def takes_link():
         # Encode URL safely before redirect
         return redirect(url_for("quality_version", video_url=quote(video_url)))
     return render_template("takes_link.html")
-
-
-
 @app.route("/quality_version")
 def quality_version():
     video_url = request.args.get("video_url")
-    video_url = unquote(video_url)  # decode back
-    print("DEBUG quality_version video_url:", video_url)  # 👀 should be full URL
-    formats, title = get_video_formats(video_url)
-    return render_template("quality_version.html", video_url=video_url, formats=formats, title=title)
+    if not video_url:
+        return "Error: No video URL provided."
 
+    video_url = unquote(video_url)
+
+    try:
+        yt = YouTube(video_url)
+
+        progressive_streams = yt.streams.filter(progressive=True, file_extension="mp4").all()
+        adaptive_streams = yt.streams.filter(progressive=False).all()
+
+        return render_template("quality_version.html",
+                               title=yt.title,
+                               video_url=video_url,
+                               progressive_streams=progressive_streams,
+                               adaptive_streams=adaptive_streams)
+
+    except Exception as e:
+        return f"Error: {e}"
 
 @app.route("/next_page")
 def next_page():
