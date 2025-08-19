@@ -31,26 +31,16 @@ def takes_link():
     return render_template("takes_link.html")
 @app.route("/quality_version")
 def quality_version():
-    video_url = request.args.get("video_url")
-    if not video_url:
+    raw_url = request.args.get("video_url")
+
+    if not raw_url:
         return "Error: No video URL provided."
 
-    video_url = unquote(video_url)
+    video_url = unquote(unquote(raw_url))  # decode twice
+    print("DECODED URL:", video_url)
 
-    try:
-        yt = YouTube(video_url)
-
-        progressive_streams = yt.streams.filter(progressive=True, file_extension="mp4").all()
-        adaptive_streams = yt.streams.filter(progressive=False).all()
-
-        return render_template("quality_version.html",
-                               title=yt.title,
-                               video_url=video_url,
-                               progressive_streams=progressive_streams,
-                               adaptive_streams=adaptive_streams)
-
-    except Exception as e:
-        return f"Error: {e}"
+    # just render template with link for now
+    return render_template("quality_version.html", video_url=video_url)
 
 @app.route("/next_page")
 def next_page():

@@ -1,30 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>YouTube Qualities</title>
+    <title>Video URL Preview</title>
 </head>
 <body>
-    <h2>{{ title }}</h2>
-    <h3>Progressive Streams (Video + Audio)</h3>
-    <ul>
-        {% for stream in progressive_streams %}
-            <li>
-                <a href="{{ url_for('next_page', video_url=video_url, quality=stream.itag) }}">
-                    itag: {{ stream.itag }} | {{ stream.resolution }} | fps: {{ stream.fps }}
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-
-    <h3>Adaptive Streams (Video only / Audio only)</h3>
-    <ul>
-        {% for stream in adaptive_streams %}
-            <li>
-                <a href="{{ url_for('next_page', video_url=video_url, quality=stream.itag) }}">
-                    itag: {{ stream.itag }} | type: {{ stream.type }} | res: {{ stream.resolution }} | abr: {{ stream.abr }}
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
+    <h1>Received Link</h1>
+    <p>The link you entered is:</p>
+    <a href="{{ video_url }}" target="_blank">{{ video_url }}</a>
 </body>
 </html>
