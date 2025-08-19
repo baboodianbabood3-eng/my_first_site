@@ -39,8 +39,26 @@ def quality_version():
     video_url = unquote(unquote(raw_url))  # decode twice
     print("DECODED URL:", video_url)
 
-    # just render template with link for now
-    return render_template("quality_version.html", video_url=video_url)
+    try:
+        yt = YouTube(video_url)
+        print("YT Title:", yt.title)
+
+        # progressive = has both audio + video
+        progressive_streams = yt.streams.filter(progressive=True, file_extension="mp4")
+
+        # adaptive = video-only or audio-only
+        adaptive_streams = yt.streams.filter(progressive=False, file_extension="mp4")
+
+        return render_template("quality_version.html",
+                               title=yt.title,
+                               video_url=video_url,
+                               progressive_streams=progressive_streams,
+                               adaptive_streams=adaptive_streams)
+
+    except Exception as e:
+        print("ERROR in quality_version:", e)
+        return f"Error: {e}"
+
 
 @app.route("/next_page")
 def next_page():
