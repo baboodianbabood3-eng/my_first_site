@@ -27,7 +27,7 @@ def takes_link():
         video_url = request.form.get("video_url")
         print("DEBUG takes_link video_url:", video_url)  # 👀 see actual input
         # Encode URL safely before redirect
-        return redirect(url_for("quality_version", video_url=video_url))
+        return redirect(f"/quality_version?video_url={video_url}")
     return render_template("takes_link.html")
 @app.route("/quality_version")
 def quality_version():
