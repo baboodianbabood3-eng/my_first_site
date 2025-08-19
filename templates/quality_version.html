@@ -1,11 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Video URL Preview</title>
+    <title>Available Qualities</title>
 </head>
 <body>
-    <h1>Received Link</h1>
-    <p>The link you entered is:</p>
-    <a href="{{ video_url }}" target="_blank">{{ video_url }}</a>
+    <h1>{{ title }}</h1>
+    <p>Video link: <a href="{{ video_url }}" target="_blank">{{ video_url }}</a></p>
+
+    <h2>Progressive Streams (Video + Audio)</h2>
+    <ul>
+        {% for stream in progressive_streams %}
+            <li>
+                {{ stream.resolution }} - {{ stream.mime_type }} - {{ stream.fps }}fps
+                (<a href="{{ url_for('next_page', video_url=video_url, quality=stream.itag) }}">Select</a>)
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h2>Adaptive Streams (Video only or Audio only)</h2>
+    <ul>
+        {% for stream in adaptive_streams %}
+            <li>
+                {% if stream.resolution %}
+                    Video: {{ stream.resolution }} - {{ stream.mime_type }} - {{ stream.fps }}fps
+                {% else %}
+                    Audio: {{ stream.abr }} - {{ stream.mime_type }}
+                {% endif %}
+                (<a href="{{ url_for('next_page', video_url=video_url, quality=stream.itag) }}">Select</a>)
+            </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
