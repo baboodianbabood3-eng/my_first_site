@@ -38,7 +38,16 @@ def quality_version():
 
     try:
         # use your Render secret file
-        cookies_path = "/etc/secrets/cookies.txt"
+        # Copy cookies to writable location
+        secret_cookies = "/etc/secrets/cookies.txt"
+        temp_cookies = "/tmp/cookies.txt"
+
+        # Read and write instead of copy
+        with open(secret_cookies, 'r') as src:
+            with open(temp_cookies, 'w') as dst:
+                dst.write(src.read())
+
+        cookies_path = temp_cookies
 
         ydl_opts = {
             "cookiefile": cookies_path,
