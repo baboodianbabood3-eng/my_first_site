@@ -1,15 +1,13 @@
-import yt_dlp
+import shutil
+import os
 
-def get_video_formats(video_url):
-    try:
-        ydl_opts = {
-            "cookiefile": "/etc/secrets/cookies.txt"  # <-- use secret file path
-        }
+# Copy cookies to /tmp so yt-dlp can read them
+secret_cookies = "/etc/secrets/cookies.txt"
+temp_cookies = "/tmp/cookies.txt"
+shutil.copy(secret_cookies, temp_cookies)
 
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-            formats = info.get("formats", [])
-            return formats, info.get("title")
-
-    except Exception as e:
-        return [], f"Error: {e}"
+ydl_opts = {
+    "cookiefile": temp_cookies,
+    "quiet": True,
+    "skip_download": True
+}
