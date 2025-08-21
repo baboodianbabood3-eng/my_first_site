@@ -1,23 +1,15 @@
-from pytube import YouTube
+import yt_dlp
 
-def list_qualities(url):
+def get_video_formats(video_url):
     try:
-        yt = YouTube(url)
-        print(f"Title: {yt.title}\n")
+        ydl_opts = {
+            "cookiefile": "/etc/secrets/cookies.txt"  # <-- use secret file path
+        }
 
-        # Get all streams with video + audio (progressive)
-        print("Available Progressive Streams (video + audio):")
-        for stream in yt.streams.filter(progressive=True, file_extension="mp4"):
-            print(f"itag: {stream.itag}, resolution: {stream.resolution}, fps: {stream.fps}, mime_type: {stream.mime_type}")
-
-        print("\nAvailable Adaptive Streams (video only / audio only):")
-        for stream in yt.streams.filter(progressive=False):
-            print(f"itag: {stream.itag}, type: {stream.type}, resolution: {stream.resolution}, abr: {stream.abr}")
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(video_url, download=False)
+            formats = info.get("formats", [])
+            return formats, info.get("title")
 
     except Exception as e:
-        print("Error:", e)
-
-
-if __name__ == "__main__":
-    url = input("Enter YouTube URL: ")
-    list_qualities(url)
+        return [], f"Error: {e}"

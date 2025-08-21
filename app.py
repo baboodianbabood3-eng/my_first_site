@@ -1,8 +1,8 @@
 from flask import Flask, render_template , request, redirect, url_for
 from urllib.parse import quote
 from urllib.parse import unquote
-from pytube import YouTube
-
+import yt_dlp
+import os
 app = Flask(__name__)
 
 @app.route("/")
@@ -31,29 +31,40 @@ def takes_link():
     return render_template("takes_link.html")
 @app.route("/quality_version")
 def quality_version():
-    raw_url = request.args.get("video_url")
+    video_url = request.args.get("video_url")
 
-    if not raw_url:
+    if not video_url:
         return "Error: No video URL provided."
 
-    video_url = request.args.get("video_url")
-    print("DECODED URL:", video_url)
-
     try:
-        yt = YouTube(video_url)
-        print("YT Title:", yt.title)
+        # use your Render secret file
+        cookies_path = "/etc/secrets/cookies.txt"
 
-        # progressive = has both audio + video
-        progressive_streams = yt.streams.filter(progressive=True, file_extension="mp4")
+        ydl_opts = {
+            "cookiefile": cookies_path,
+            "quiet": True,
+            "skip_download": True,  # only fetch info, not video
+        }
 
-        # adaptive = video-only or audio-only
-        adaptive_streams = yt.streams.filter(progressive=False, file_extension="mp4")
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(video_url, download=False)
+            formats = info.get("formats", [])
 
-        return render_template("quality_version.html",
-                               title=yt.title,
-                               video_url=video_url,
-                               progressive_streams=progressive_streams,
-                               adaptive_streams=adaptive_streams)
+        # Separate progressive & adaptive like you did with pytube
+        progressive_streams = [
+            f for f in formats if f.get("acodec") != "none" and f.get("vcodec") != "none"
+        ]
+        adaptive_streams = [
+            f for f in formats if f.get("acodec") == "none" or f.get("vcodec") == "none"
+        ]
+
+        return render_template(
+            "quality_version.html",
+            title=info.get("title"),
+            video_url=video_url,
+            progressive_streams=progressive_streams,
+            adaptive_streams=adaptive_streams,
+        )
 
     except Exception as e:
         print("ERROR in quality_version:", e)
