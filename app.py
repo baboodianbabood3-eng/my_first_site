@@ -2,6 +2,7 @@ from flask import Flask, render_template , request, redirect, url_for
 from urllib.parse import quote
 from urllib.parse import unquote
 import yt_dlp
+from quality_version import get_video_formats
 import os
 app = Flask(__name__)
 
@@ -25,6 +26,16 @@ def language(lang):
 def takes_link():
     if request.method == "POST":
         video_url = request.form.get("video_url")
+
+        # Normalize youtu.be URLs and remove extra query parameters
+        if "youtu.be/" in video_url:
+            video_url = video_url.replace("youtu.be/", "youtube.com/watch?v=")
+
+        # Normalize Shorts URLs
+        if "youtube.com/shorts/" in video_url:
+            video_url = video_url.replace("/shorts/", "/watch?v=")
+
+        print("DEBUG normalized video_url:", video_url)
         print("DEBUG takes_link video_url:", video_url)  # 👀 see actual input
         # Encode URL safely before redirect
         return redirect(f"/quality_version?video_url={video_url}")
@@ -32,53 +43,71 @@ def takes_link():
 @app.route("/quality_version")
 def quality_version():
     video_url = request.args.get("video_url")
-
     if not video_url:
         return "Error: No video URL provided."
 
     try:
-        # use your Render secret file
-        # Copy cookies to writable location
-        secret_cookies = "/etc/secrets/cookies.txt"
-        temp_cookies = "/tmp/cookies.txt"
+        # Normalize youtu.be links
+        if "youtu.be/" in video_url:
+            video_url = video_url.replace("youtu.be/", "youtube.com/watch?v=").split("?")[0]
 
-        # Read and write instead of copy
-        with open(secret_cookies, 'r') as src:
-            with open(temp_cookies, 'w') as dst:
-                dst.write(src.read())
+        # Fetch formats using V2RayN proxy
+        result = get_video_formats(video_url)  # no cookies
 
-        cookies_path = temp_cookies
-
-        ydl_opts = {
-            "cookiefile": cookies_path,
-            "quiet": True,
-            "skip_download": True,  # only fetch info, not video
-        }
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-            formats = info.get("formats", [])
-
-        # Separate progressive & adaptive like you did with pytube
-        progressive_streams = [
-            f for f in formats if f.get("acodec") != "none" and f.get("vcodec") != "none"
-        ]
-        adaptive_streams = [
-            f for f in formats if f.get("acodec") == "none" or f.get("vcodec") == "none"
-        ]
+        # Optional: print qualities in console
+        print(f"Available formats for {result['title']}:")
+        for f in result["progressive"]:
+            print(f"{f['format_id']}: {f['ext']} {f.get('resolution')} {f.get('fps', '')}fps")
+        for f in result["adaptive"]:
+            print(f"{f['format_id']}: {f['ext']} vcodec:{f.get('vcodec')} acodec:{f.get('acodec')}")
 
         return render_template(
             "quality_version.html",
-            title=info.get("title"),
+            title=result["title"],
             video_url=video_url,
-            progressive_streams=progressive_streams,
-            adaptive_streams=adaptive_streams,
+            progressive_streams=result["progressive"],
+            adaptive_streams=result["adaptive"],
         )
 
     except Exception as e:
         print("ERROR in quality_version:", e)
         return f"Error: {e}"
+@app.route("/quality_clean")
+def quality_clean():
+    video_url = request.args.get("video_url", "")
+    if not video_url:
+        return "Error: No video URL provided."
 
+    try:
+        # reuse your existing function
+        result = get_video_formats(video_url)
+
+        # define the wanted resolutions
+        wanted_res = {"144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p"}
+
+        # filter progressive only
+        progressive_clean = [
+            f for f in result["progressive"]
+            if f.get("resolution") in wanted_res
+        ]
+
+        # filter adaptive only
+        adaptive_clean = [
+            f for f in result["adaptive"]
+            if f.get("resolution") in wanted_res
+        ]
+
+        return render_template(
+            "quality_clean.html",
+            title=result["title"],
+            video_url=video_url,
+            progressive_streams=progressive_clean,
+            adaptive_streams=adaptive_clean,
+        )
+
+    except Exception as e:
+        print("ERROR in quality_clean:", e)
+        return f"Error: {e}"
 
 @app.route("/next_page")
 def next_page():
