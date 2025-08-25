@@ -72,42 +72,7 @@ def quality_version():
     except Exception as e:
         print("ERROR in quality_version:", e)
         return f"Error: {e}"
-@app.route("/quality_clean")
-def quality_clean():
-    video_url = request.args.get("video_url", "")
-    if not video_url:
-        return "Error: No video URL provided."
 
-    try:
-        # reuse your existing function
-        result = get_video_formats(video_url)
-
-        # define the wanted resolutions
-        wanted_res = {"144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p"}
-
-        # filter progressive only
-        progressive_clean = [
-            f for f in result["progressive"]
-            if f.get("resolution") in wanted_res
-        ]
-
-        # filter adaptive only
-        adaptive_clean = [
-            f for f in result["adaptive"]
-            if f.get("resolution") in wanted_res
-        ]
-
-        return render_template(
-            "quality_clean.html",
-            title=result["title"],
-            video_url=video_url,
-            progressive_streams=progressive_clean,
-            adaptive_streams=adaptive_clean,
-        )
-
-    except Exception as e:
-        print("ERROR in quality_clean:", e)
-        return f"Error: {e}"
 
 @app.route("/next_page")
 def next_page():

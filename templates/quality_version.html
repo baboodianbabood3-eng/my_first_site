@@ -20,13 +20,22 @@
     <div class="grid gap-4 md:grid-cols-2">
       {% for stream in progressive_streams %}
         <div class="bg-gray-800 rounded-2xl shadow-lg p-5 hover:bg-gray-700 transition">
-          <p class="text-lg font-semibold mb-2">
-            {{ stream['ext'] | upper }} — {{ stream.get('resolution', 'N/A') }}
+          {% set height = stream.get('height', 0) %}
+          <p class="text-2xl font-bold mb-2 text-white">
+            {{ height }}p
           </p>
           <p class="text-sm text-gray-400">
-            ID: {{ stream['format_id'] }} |
-            FPS: {{ stream.get('fps', '—') }}
-          </p>
+  {{ stream['ext'] | upper }} • {{ stream.get('fps', '—') }} FPS
+</p>
+{% if stream.get('size_mb') %}
+<p class="text-sm text-green-400">
+  📁 Size: {{ stream['size_mb'] }} MB
+</p>
+{% else %}
+<p class="text-sm text-yellow-400">
+  📁 Size: Unknown
+</p>
+{% endif %}
           <a href="{{ url_for('next_page', video_url=video_url, quality=stream['format_id']) }}"
              class="mt-4 inline-block w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-4 rounded-xl text-center transition">
             Choose this Quality
@@ -36,25 +45,7 @@
     </div>
 
     <!-- Adaptive Streams -->
-    <h2 class="text-xl font-semibold mt-10 mb-4 text-green-400">Adaptive Streams</h2>
-    <div class="grid gap-4 md:grid-cols-2">
-      {% for stream in adaptive_streams %}
-        <div class="bg-gray-800 rounded-2xl shadow-lg p-5 hover:bg-gray-700 transition">
-          <p class="text-lg font-semibold mb-2">
-            {{ stream['ext'] | upper }}
-          </p>
-          <p class="text-sm text-gray-400">
-            ID: {{ stream['format_id'] }} |
-            Video: {{ stream.get('vcodec', '—') }} |
-            Audio: {{ stream.get('acodec', '—') }}
-          </p>
-          <a href="{{ url_for('next_page', video_url=video_url, quality=stream['format_id']) }}"
-             class="mt-4 inline-block w-full bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-4 rounded-xl text-center transition">
-            Choose this Quality
-          </a>
-        </div>
-      {% endfor %}
-    </div>
+
 
   </div>
 </body>
