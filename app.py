@@ -2,9 +2,13 @@ from flask import Flask, render_template , request, redirect, url_for
 from urllib.parse import quote
 from urllib.parse import unquote
 import yt_dlp
+from downloader import download_video
 from quality_version import get_video_formats
 import os
 app = Flask(__name__)
+DOWNLOAD_FOLDER = "downloads/"
+if not os.path.exists(DOWNLOAD_FOLDER):
+    os.makedirs(DOWNLOAD_FOLDER)
 
 @app.route("/")
 def home():
@@ -74,6 +78,20 @@ def quality_version():
         return f"Error: {e}"
 
 
+@app.route("/download_and_process")
+def download_and_process():
+    video_url = request.args.get("video_url")
+    format_id = request.args.get("quality")
+
+    if not video_url or not format_id:
+        return "Error: Missing video URL or quality"
+
+    result = download_video(video_url, format_id, DOWNLOAD_FOLDER)
+
+    if result["success"]:
+        return f"Video downloaded successfully: {result['title']}"
+    else:
+        return f"Error downloading video: {result['error']}"
 @app.route("/next_page")
 def next_page():
     video_url = request.args.get("video_url")
