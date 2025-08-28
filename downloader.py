@@ -1,6 +1,6 @@
 import yt_dlp
 import os
-
+from audio_downloader import download_audio
 PROXIES = {
     "http": "socks5h://127.0.0.1:10808",
     "https": "socks5h://127.0.0.1:10808",
@@ -17,7 +17,8 @@ def download_video(video_url: str, format_id: str, download_folder: str):
     ydl_opts = {
         "proxy": PROXIES["https"],
         "cookiesfrombrowser": ("firefox",),
-        "format": f"{format_id}+bestaudio[ext=m4a]/best",  # Download specific quality
+        "format": format_id,
+        "merge_output_format": "mp4",  # Download specific quality
         "outtmpl": os.path.join(download_folder, "%(title)s.%(ext)s"),
         "socket_timeout": 30,
         "retries": 2,

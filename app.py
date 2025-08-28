@@ -5,6 +5,7 @@ import yt_dlp
 from downloader import download_video
 from quality_version import get_video_formats
 import os
+from audio_downloader import download_audio
 app = Flask(__name__)
 DOWNLOAD_FOLDER = "downloads/"
 if not os.path.exists(DOWNLOAD_FOLDER):
@@ -92,6 +93,26 @@ def download_and_process():
         return f"Video downloaded successfully: {result['title']}"
     else:
         return f"Error downloading video: {result['error']}"
+
+
+@app.route("/download_separate")
+def download_separate():
+    video_url = request.args.get("video_url")
+    format_id = request.args.get("quality")
+
+    if not video_url or not format_id:
+        return "Error: Missing video URL or quality"
+
+    # Download video
+    video_result = download_video(video_url, format_id, DOWNLOAD_FOLDER)
+
+    # Download audio
+    audio_result = download_audio(video_url, DOWNLOAD_FOLDER)
+
+    if video_result["success"] and audio_result["success"]:
+        return f"Both downloaded successfully: {video_result['title']}"
+    else:
+        return f"Download failed - Video: {video_result.get('error', 'OK')}, Audio: {audio_result.get('error', 'OK')}"
 @app.route("/next_page")
 def next_page():
     video_url = request.args.get("video_url")
